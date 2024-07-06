@@ -1,7 +1,8 @@
 // import { useState } from 'react'
 // import reactLogo from './assets/react.svg'
 // import viteLogo from '/vite.svg'
-import './App.css'
+import './App.css';
+import { useState } from 'react';
 
 function ProductCategoryRow({ category }: { category: string}) {
   return (
@@ -27,11 +28,23 @@ function ProductRow({ product }) {
     )
 }
 
-function ProductTable({ products }) {
+function ProductTable({ products, filterText, inStockOnly }) {
   const rows = []
   let lastCategory = null
 
   products.forEach((product) => {
+    // 検索文字列が含まれていない場合は何もしない
+    if (
+      product.name.toLowerCase().indexOf(
+        filterText.toLowerCase()
+      ) === -1
+    ) {
+      return;
+    }
+    // 在庫ありのみ表示する場合、在庫切れの商品は何もしない
+    if (inStockOnly && !product.stocked) {
+      return;
+    }
     if (product.category !== lastCategory) {
       rows.push(
         <ProductCategoryRow
@@ -60,23 +73,32 @@ function ProductTable({ products }) {
   );
 }
 
-function SearchBar() {
+function SearchBar({ filterText, inStockOnly }) {
   return (
     <form>
-      <input type="text" placeholder="Search..." />
+      <input type="text" value={filterText} placeholder="Search..." />
       <label>
-        <input type="checkbox" />
-
+        <input type="checkbox" checked={inStockOnly} />
+        {' '}
+        Only Show products in stock
       </label>
     </form>
   )
 }
 
 function FilterableProductTable({ products }) {
+  const [filterText, setFilterText] = useState('');
+  const [inStockOnly, setInStockOnly] = useState(false);
+
   return (
     <div>
-      <SearchBar />
-      <ProductTable products={products} />
+      <SearchBar
+        filterText={filterText}
+        inStockOnly={inStockOnly} />
+      <ProductTable
+       products={products}
+       filterText={filterText}
+       inStockOnly={inStockOnly} />
     </div>
   )
 }
